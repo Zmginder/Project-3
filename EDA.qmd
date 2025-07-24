@@ -5,23 +5,39 @@ format: html
 editor: visual
 ---
 
-## Quarto
+## Introduction
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+The data explored in this analysis comes from the the CDC's BRFSS2015 survey. The target variable for analysis is the Diabetes_binary variable which is in 2 classes: no diabetes or prediabetes/diabetes. There are 21 predictor variables in the dataset to potentially include in the subsequent models.
 
-## Running Code
+| Variable Name | Description | Classes or Range |
+|------------------------|------------------------|------------------------|
+| HighBP | Factor variable for high blood pressure | "No High BP" or "High BP" |
+| HighChol |  | "No High Cholesterol" or "High Cholesterol" |
+| CholCheck |  | "No Cholesterol Check In 5 Years" or "Yes Cholesterol Check In 5 Years" |
+| BMI |  | Values greater than 0 |
+| Smoker |  | "Smoked At Least 100 Cigarettes" or "Never Smoked 100 Cigarettes" |
+| Stroke |  | "Diagnosed With Stroke" or "Never Diagnosed With Stroke" |
+| HeartDiseaseorAttack |  | "Coronary Heart Disease or Myocardial Infarction" or "No Heart Disease Evident" |
+| PhysActivity |  | "Physical Activity in Past 30 Days" or "No Physical Activity in Past 30 Days" |
+| Fruits |  | "Consume Fruit 1 Or More Times Per Day" or "Does Not Consume Fruits Regularly" |
+| Veggies |  | "Consume Vegetables 1 Or More Times Per Day" or "Does Not Consume Vegetables Regularly" |
+| HvyAlcoholConsump |  | "Heavy Alcohol Consumer" or "Not Heavy Alcohol Consumer" |
+| AnyHealthcare |  | "Has Health Insurance" or "No Health Insurance" |
+| NoDocbcCost |  |  |
+| GenHlth |  |  |
+| MentHlth |  |  |
+| PhysHlth |  |  |
+| DiffWalk |  |  |
+| Sex |  |  |
+| Age |  |  |
+| Education |  |  |
+| Income |  |  |
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+The dataset is unbalanced meaning there are more cases where the survey respondent had no diabetes than in the case where the survey respondent either had prediabetes or diabetes. This is important when it comes to modeling as we likely will want to ensure that our model does better than the majority class rate, or rate of the largest class of the dataset, in this case being the no diabetes class. If a model only predicted the majority class it would still achieve this majority class accuracy, but it would not be useful. Ensuring the model is useful in predicting the Diabetes_binary variable based on a set of predictors is the goal and ensuring the accuracy of the model is better than the majority class rate will be one important evaluation of model importance.
+
+## Data
 
 ```{r}
-1 + 1
+Diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+str(Diabetes)
 ```
-
-You can add options to executable code like this
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
