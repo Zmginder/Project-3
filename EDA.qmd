@@ -208,7 +208,15 @@ The result of FALSE shows there are no NA's in the data set. This means this dat
 
 ## Summarizations
 
-In this exploratory data analysis stage, we want to determine predictors that may be beneficial in predicting the diabetes status (i.e. the Diabetes_binary variable). To do this we can evaluate the statistical significance of each variable in relationship to the Diabetes_binary variable.
+In this exploratory data analysis stage, we want to evaluate three variables that may be beneficial in predicting the diabetes status (i.e. the Diabetes_binary variable). To do this we can explore the variables in both uni variate and bivariate analyses.
+
+```{r}
+#Evaluate the response variable: Diabetes_binary
+barplot(table(Diabetes$Diabetes_binary),ylim=c(0,250000))
+grid(nx=NA,ny=NULL,lty=3,col="black")
+
+table(Diabetes$Diabetes_binary)
+```
 
 ```{r}
 #Evaluate the HighBP variable
@@ -219,6 +227,7 @@ chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,HighBP=Diabetes$HighBP
 Using a Chi-square test for independence it appears statistically significant suggesting that the variables of HighBP and Diabetes_binary are not independent, and thus should be considered for use as a predictor. I will do this same procedure for all additional categorical/factor variables next.
 
 ```{r}
+#| echo: false
 #Evaluate the HighChol variable
 table(Diabetes_binary=Diabetes$Diabetes_binary,HighChol=Diabetes$HighChol)
 chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,HighChol=Diabetes$HighChol))
@@ -252,4 +261,64 @@ table(Diabetes_binary=Diabetes$Diabetes_binary,
       Fruits=Diabetes$Fruits)
 chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
                  Fruits=Diabetes$Fruits))
+
+#Evaluate the Veggies variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      Veggies=Diabetes$Veggies)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 Veggies=Diabetes$Veggies))
+
+#Evaluate the HvyAlcoholConsump variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      HvyAlcoholConsump=Diabetes$HvyAlcoholConsump)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 HvyAlcoholConsump=Diabetes$HvyAlcoholConsump))
+
+#Evaluate the AnyHealthcare variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      AnyHealthcare=Diabetes$AnyHealthcare)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 AnyHealthcare=Diabetes$AnyHealthcare))
+
+#Evaluate the NoDocbcCost variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      NoDocbcCost=Diabetes$NoDocbcCost)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 NoDocbcCost=Diabetes$NoDocbcCost))
+
+#Evaluate the GenHlth variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      GenHlth=Diabetes$GenHlth)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 GenHlth=Diabetes$GenHlth))
+
+#Evaluate the DiffWalk variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      DiffWalk=Diabetes$DiffWalk)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 DiffWalk=Diabetes$DiffWalk))
+
+#Evaluate the Sex variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      Sex=Diabetes$Sex)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 Sex=Diabetes$Sex))
+
+#Evaluate the Age variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      Age=Diabetes$Age)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 Age=Diabetes$Age))
+
+#Evaluate the Education variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      Education=Diabetes$Education)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 Education=Diabetes$Education))
+
+#Evaluate the Income variable
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      Income=Diabetes$Income)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 Income=Diabetes$Income))
 ```
