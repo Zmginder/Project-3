@@ -221,7 +221,7 @@ grid(nx=NA,ny=NULL,lty=3,col="black")
 table(Diabetes$Diabetes_binary)
 ```
 
-This bar plot shows the frequency of the respondents that had no diabetes diagnosis compared to those that had prediabetes or diabetes diagnoses. This confirms the original detail of the data that this is an unbalanced design. Specifically, we see that \$\$\\frac{218334}{253680}\\approx 86.07%. This is the majority class rate that the accuracy of our models would need to do better than in order to be beneficial.
+This bar plot shows the frequency of the respondents that had no diabetes diagnosis compared to those that had prediabetes or diabetes diagnoses. This confirms the original detail of the data that this is an unbalanced design. Specifically, we see that $\frac{218334}{253680}\approx$ 86.07%. This is the majority class rate that the accuracy of our models would need to do better than in order to be beneficial.
 
 Three explanatory variables of interest to analyze are BMI, HvyAlcoholConsump, and Income. Research suggests that increased BMI is related to an increase in risk of diabetes (<https://pmc.ncbi.nlm.nih.gov/articles/PMC4457375/>). Furthermore, it is possible that income relates to diabetes risk as healthy food is known to be expensive when compared to cheaper food. Alcohol consumption would also be a consideration as alcohol is high in sugar. Univariate analysis can be performed on these three variables to analyze their distributions. Bivariate analysis between each explanatory variable with the response variable is also useful to determine initial association based on statistical significance.
 
