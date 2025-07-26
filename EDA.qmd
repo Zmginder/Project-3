@@ -213,6 +213,7 @@ In this exploratory data analysis stage, we want to evaluate three variables tha
 #### Diabetes_binary
 
 ```{r}
+#| echo: false
 #Evaluate the response variable: Diabetes_binary
 barplot(table(Diabetes$Diabetes_binary),ylim=c(0,250000))
 grid(nx=NA,ny=NULL,lty=3,col="black")
@@ -243,13 +244,14 @@ cat("The range of the BMI of the respondents is", range_bmi,"\n")
 The univariate analysis of the BMI of the survey respondents shows that the distribution of BMIs is right skewed with a median of 27. According to the National Heart, Lung, and Blood Institute, a BMI over 24.9 is considered overweight (<https://www.nhlbi.nih.gov/health/educational/lose_wt/risk.htm>). This analysis shows that a majority of the respondents were overweight based on BMI and earlier research was shown that high BMI is associated with increased risk in diabetes.
 
 ```{r}
+#| echo: false
 boxplot(Diabetes$BMI~Diabetes$Diabetes_binary,
         xlab="Diabetes_binary",
         ylab="BMI",
         outline=FALSE)
 ```
 
-The bivariate analysis of Diabetes_binary with BMI (with outliers removed) shows that the median BMI for respondents without diabetes is lower than median BMI for respondents with prediabetes/diabetes. This validates the assumption earlier based on the research that BMI may be a useful predictor of diabetes status..........
+The bivariate analysis of Diabetes_binary with BMI (with outliers removed) shows that the median BMI for respondents without diabetes is lower than median BMI for respondents with prediabetes/diabetes. This validates the assumption earlier based on the research that BMI may be a useful predictor of diabetes status.
 
 #### Heavy Alcohol Consumption (HvyAlcoholConsump)
 
@@ -264,6 +266,17 @@ table(Diabetes$HvyAlcoholConsump)
 
 The univariate analysis of the HvyAlcoholConsump variable shows a bar plot similar to that of the Diabetes_binary response variable where there is a high frequency in one class and a low frequency in another. As discussed before, alcohol consumption might be associated with diabetes as alcohol contains high levels of sugar. Consider the proportion of respondents with prediabetes/diabetes and those that are heavy alcohol consumers is similar this variable should be considered as a potential explanatory variable.
 
+```{r}
+#| echo: false
+#Evaluate the HvyAlcoholConsump variable (bivariate analysis)
+table(Diabetes_binary=Diabetes$Diabetes_binary,
+      HvyAlcoholConsump=Diabetes$HvyAlcoholConsump)
+chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
+                 HvyAlcoholConsump=Diabetes$HvyAlcoholConsump))
+```
+
+The bivariate analysis of Income and Diabetes_binary using a Chi-square test for independence shows statistically significance suggesting that the variables of Income and Diabetes_binary are not independent, and thus should be considered for use as a predictor. We performed this test on the contingency table shown above.
+
 #### Income
 
 ```{r}
@@ -275,103 +288,15 @@ grid(nx=NA,ny=NULL,lty=3,col="black")
 table(Diabetes$Income)
 ```
 
-The univariate analysis of the Income variable shows that the distribution
-
-Using a Chi-square test for independence it appears statistically significant suggesting that the variables of HighBP and Diabetes_binary are not independent, and thus should be considered for use as a predictor. I will do this same procedure for all additional categorical/factor variables next.
+The univariate analysis of the Income variable shows that the distribution is left skewed with the income of the respondents being relatively high in terms of the provided classes. As discussed prior, higher incomes are likely associated with less risk of diabetes since higher incomes provide access to healthy foods which are generally lower in sugar. Therefore, this variable may be a useful predictor as similarly to the other variables, the majority class of the variable is associated with the majority class of the diabetes variable which was no diabetes. It can be further analyzed with bivariate analysis whether income is statistically associated with diabetes status.
 
 ```{r}
 #| echo: false
-#Evaluate the HighChol variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,HighChol=Diabetes$HighChol)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,HighChol=Diabetes$HighChol))
-
-#Evaluate the CholCheck variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,CholCheck=Diabetes$CholCheck)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,CholCheck=Diabetes$CholCheck))
-
-#Evaluate the Smoker variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,Smoker=Diabetes$Smoker)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,Smoker=Diabetes$Smoker))
-
-#Evaluate the Stroke variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,Stroke=Diabetes$Stroke)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,Stroke=Diabetes$Stroke))
-
-#Evaluate the HeartDiseaseorAttack variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      HeartDiseaseorAttack=Diabetes$HeartDiseaseorAttack)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 HeartDiseaseorAttack=Diabetes$HeartDiseaseorAttack))
-
-#Evaluate the PhysActivity variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      PhysActivity=Diabetes$PhysActivity)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 PhysActivity=Diabetes$PhysActivity))
-
-#Evaluate the Fruits variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      Fruits=Diabetes$Fruits)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 Fruits=Diabetes$Fruits))
-
-#Evaluate the Veggies variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      Veggies=Diabetes$Veggies)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 Veggies=Diabetes$Veggies))
-
-#Evaluate the HvyAlcoholConsump variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      HvyAlcoholConsump=Diabetes$HvyAlcoholConsump)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 HvyAlcoholConsump=Diabetes$HvyAlcoholConsump))
-
-#Evaluate the AnyHealthcare variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      AnyHealthcare=Diabetes$AnyHealthcare)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 AnyHealthcare=Diabetes$AnyHealthcare))
-
-#Evaluate the NoDocbcCost variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      NoDocbcCost=Diabetes$NoDocbcCost)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 NoDocbcCost=Diabetes$NoDocbcCost))
-
-#Evaluate the GenHlth variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      GenHlth=Diabetes$GenHlth)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 GenHlth=Diabetes$GenHlth))
-
-#Evaluate the DiffWalk variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      DiffWalk=Diabetes$DiffWalk)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 DiffWalk=Diabetes$DiffWalk))
-
-#Evaluate the Sex variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      Sex=Diabetes$Sex)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 Sex=Diabetes$Sex))
-
-#Evaluate the Age variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      Age=Diabetes$Age)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 Age=Diabetes$Age))
-
-#Evaluate the Education variable
-table(Diabetes_binary=Diabetes$Diabetes_binary,
-      Education=Diabetes$Education)
-chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
-                 Education=Diabetes$Education))
-
-#Evaluate the Income variable
+#Evaluate the Income variable (bivariate analysis)
 table(Diabetes_binary=Diabetes$Diabetes_binary,
       Income=Diabetes$Income)
 chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
                  Income=Diabetes$Income))
 ```
+
+Using a Chi-square test for independence it appears statistically significant suggesting that the variables of Income and Diabetes_binary are not independent, and thus should be considered for use as a predictor. We performed this test on the contingency table shown above.

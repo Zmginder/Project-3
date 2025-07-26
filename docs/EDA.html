@@ -145,8 +145,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The data explored in this analysis comes from the the CDC’s BRFSS2015 survey. The target variable for analysis is the Diabetes_binary variable which is in 2 classes: no diabetes or prediabetes/diabetes. There are 21 predictor variables in the dataset to potentially include in the subsequent models.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 7%">
-<col style="width: 65%">
+<col style="width: 6%">
+<col style="width: 66%">
 <col style="width: 26%">
 </colgroup>
 <thead>
@@ -423,164 +423,151 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="summarizations" class="level2">
 <h2 class="anchored" data-anchor-id="summarizations">Summarizations</h2>
-<p>In this exploratory data analysis stage, we want to determine predictors that may be beneficial in predicting the diabetes status (i.e.&nbsp;the Diabetes_binary variable). To do this we can evaluate the statistical significance of each variable in relationship to the Diabetes_binary variable.</p>
+<p>In this exploratory data analysis stage, we want to evaluate three variables that may be beneficial in predicting the diabetes status (i.e.&nbsp;the Diabetes_binary variable). To do this we can explore the variables in both uni variate and bivariate analyses.</p>
+<section id="diabetes_binary" class="level4">
+<h4 class="anchored" data-anchor-id="diabetes_binary">Diabetes_binary</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the HighBP variable</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">HighBP=</span>Diabetes<span class="sc">$</span>HighBP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      HighBP
-Diabetes_binary        No High BP High BP
-  No Diabetes              136109   82225
-  Prediabetes/Diabetes       8742   26604</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="EDA_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">HighBP=</span>Diabetes<span class="sc">$</span>HighBP))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, HighBP = Diabetes$HighBP)
-X-squared = 17562, df = 1, p-value &lt; 2.2e-16</code></pre>
+         No Diabetes Prediabetes/Diabetes 
+              218334                35346 </code></pre>
 </div>
 </div>
-<p>Using a Chi-square test for independence it appears statistically significant suggesting that the variables of HighBP and Diabetes_binary are not independent, and thus should be considered for use as a predictor. I will do this same procedure for all additional categorical/factor variables next.</p>
+<p>This bar plot shows the frequency of the respondents that had no diabetes diagnosis compared to those that had prediabetes or diabetes diagnoses. This confirms the original detail of the data that this is an unbalanced design. Specifically, we see that $$\frac{218334}{253680}\approx 86.07%. This is the majority class rate that the accuracy of our models would need to do better than in order to be beneficial.</p>
+<p>Three explanatory variables of interest to analyze are BMI, HvyAlcoholConsump, and Income. Research suggests that increased BMI is related to an increase in risk of diabetes (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4457375/" class="uri">https://pmc.ncbi.nlm.nih.gov/articles/PMC4457375/</a>). Furthermore, it is possible that income relates to diabetes risk as healthy food is known to be expensive when compared to cheaper food. Alcohol consumption would also be a consideration as alcohol is high in sugar. Univariate analysis can be performed on these three variables to analyze their distributions. Bivariate analysis between each explanatory variable with the response variable is also useful to determine initial association based on statistical significance.</p>
+</section>
+<section id="bmi" class="level4">
+<h4 class="anchored" data-anchor-id="bmi">BMI</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the HighChol variable</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">HighChol=</span>Diabetes<span class="sc">$</span>HighChol)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      HighChol
-Diabetes_binary        No High Cholesterol High Cholesterol
-  No Diabetes                       134429            83905
-  Prediabetes/Diabetes               11660            23686</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="EDA_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">HighChol=</span>Diabetes<span class="sc">$</span>HighChol))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The median of the BMI of the respondents is 27 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The range of the BMI of the respondents is 12 98 </code></pre>
+</div>
+</div>
+<p>The univariate analysis of the BMI of the survey respondents shows that the distribution of BMIs is right skewed with a median of 27. According to the National Heart, Lung, and Blood Institute, a BMI over 24.9 is considered overweight (<a href="https://www.nhlbi.nih.gov/health/educational/lose_wt/risk.htm" class="uri">https://www.nhlbi.nih.gov/health/educational/lose_wt/risk.htm</a>). This analysis shows that a majority of the respondents were overweight based on BMI and earlier research was shown that high BMI is associated with increased risk in diabetes.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="EDA_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The bivariate analysis of Diabetes_binary with BMI (with outliers removed) shows that the median BMI for respondents without diabetes is lower than median BMI for respondents with prediabetes/diabetes. This validates the assumption earlier based on the research that BMI may be a useful predictor of diabetes status.</p>
+</section>
+<section id="heavy-alcohol-consumption-hvyalcoholconsump" class="level4">
+<h4 class="anchored" data-anchor-id="heavy-alcohol-consumption-hvyalcoholconsump">Heavy Alcohol Consumption (HvyAlcoholConsump)</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="EDA_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Heavy Alcohol Consumer Not Heavy Alcohol Consumer 
+                     14256                     239424 </code></pre>
+</div>
+</div>
+<p>The univariate analysis of the HvyAlcoholConsump variable shows a bar plot similar to that of the Diabetes_binary response variable where there is a high frequency in one class and a low frequency in another. As discussed before, alcohol consumption might be associated with diabetes as alcohol contains high levels of sugar. Consider the proportion of respondents with prediabetes/diabetes and those that are heavy alcohol consumers is similar this variable should be considered as a potential explanatory variable.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>                      HvyAlcoholConsump
+Diabetes_binary        Heavy Alcohol Consumer Not Heavy Alcohol Consumer
+  No Diabetes                           13424                     204910
+  Prediabetes/Diabetes                    832                      34514</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Pearson's Chi-squared test with Yates' continuity correction
 
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, HighChol = Diabetes$HighChol)
-X-squared = 10174, df = 1, p-value &lt; 2.2e-16</code></pre>
+data:  table(Diabetes_binary = Diabetes$Diabetes_binary, HvyAlcoholConsump = Diabetes$HvyAlcoholConsump)
+X-squared = 825.12, df = 1, p-value &lt; 2.2e-16</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the CholCheck variable</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">CholCheck=</span>Diabetes<span class="sc">$</span>CholCheck)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      CholCheck
-Diabetes_binary        No Cholesterol Check In 5 Years
-  No Diabetes                                     9229
-  Prediabetes/Diabetes                             241
-                      CholCheck
-Diabetes_binary        Yes Cholesterol Check In 5 Years
-  No Diabetes                                    209105
-  Prediabetes/Diabetes                            35105</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">CholCheck=</span>Diabetes<span class="sc">$</span>CholCheck))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, CholCheck = Diabetes$CholCheck)
-X-squared = 1062.9, df = 1, p-value &lt; 2.2e-16</code></pre>
+<p>The bivariate analysis of Income and Diabetes_binary using a Chi-square test for independence shows statistically significance suggesting that the variables of Income and Diabetes_binary are not independent, and thus should be considered for use as a predictor. We performed this test on the contingency table shown above.</p>
+</section>
+<section id="income" class="level4">
+<h4 class="anchored" data-anchor-id="income">Income</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="EDA_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the Smoker variable</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">Smoker=</span>Diabetes<span class="sc">$</span>Smoker)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      Smoker
-Diabetes_binary        Smoker Not A Smoker
-  No Diabetes           94106       124228
-  Prediabetes/Diabetes  18317        17029</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">Smoker=</span>Diabetes<span class="sc">$</span>Smoker))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, Smoker = Diabetes$Smoker)
-X-squared = 937.06, df = 1, p-value &lt; 2.2e-16</code></pre>
+           Less than $10,000 $10,000 to less than $15,000 
+                        9811                        11783 
+$15,000 to less than $20,000 $20,000 to less than $25,000 
+                       15994                        20135 
+$25,000 to less than $35,000 $35,000 to less than $50,000 
+                       25883                        36470 
+$50,000 to less than $75,000              $75,000 or more 
+                       43219                        90385 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the Stroke variable</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">Stroke=</span>Diabetes<span class="sc">$</span>Stroke)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The univariate analysis of the Income variable shows that the distribution is left skewed with the income of the respondents being relatively high in terms of the provided classes. As discussed prior, higher incomes are likely associated with less risk of diabetes since higher incomes provide access to healthy foods which are generally lower in sugar. Therefore, this variable may be a useful predictor as similarly to the other variables, the majority class of the variable is associated with the majority class of the diabetes variable which was no diabetes. It can be further analyzed with bivariate analysis whether income is statistically associated with diabetes status.</p>
+<div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>                      Stroke
-Diabetes_binary        Diagnosed With Stroke No Stroke
-  No Diabetes                           7024    211310
-  Prediabetes/Diabetes                  3268     32078</code></pre>
+<pre><code>                      Income
+Diabetes_binary        Less than $10,000 $10,000 to less than $15,000
+  No Diabetes                       7428                         8697
+  Prediabetes/Diabetes              2383                         3086
+                      Income
+Diabetes_binary        $15,000 to less than $20,000
+  No Diabetes                                 12426
+  Prediabetes/Diabetes                         3568
+                      Income
+Diabetes_binary        $20,000 to less than $25,000
+  No Diabetes                                 16081
+  Prediabetes/Diabetes                         4054
+                      Income
+Diabetes_binary        $25,000 to less than $35,000
+  No Diabetes                                 21379
+  Prediabetes/Diabetes                         4504
+                      Income
+Diabetes_binary        $35,000 to less than $50,000
+  No Diabetes                                 31179
+  Prediabetes/Diabetes                         5291
+                      Income
+Diabetes_binary        $50,000 to less than $75,000 $75,000 or more
+  No Diabetes                                 37954           83190
+  Prediabetes/Diabetes                         5265            7195</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,<span class="at">Stroke=</span>Diabetes<span class="sc">$</span>Stroke))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, Stroke = Diabetes$Stroke)
-X-squared = 2838.9, df = 1, p-value &lt; 2.2e-16</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the HeartDiseaseorAttack variable</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">HeartDiseaseorAttack=</span>Diabetes<span class="sc">$</span>HeartDiseaseorAttack)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      HeartDiseaseorAttack
-Diabetes_binary        Coronary Heart Disease or Myocardial Infarction
-  No Diabetes                                                    16015
-  Prediabetes/Diabetes                                            7878
-                      HeartDiseaseorAttack
-Diabetes_binary        No Heart Disease Evident
-  No Diabetes                            202319
-  Prediabetes/Diabetes                    27468</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">HeartDiseaseorAttack=</span>Diabetes<span class="sc">$</span>HeartDiseaseorAttack))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, HeartDiseaseorAttack = Diabetes$HeartDiseaseorAttack)
-X-squared = 7971.2, df = 1, p-value &lt; 2.2e-16</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the PhysActivity variable</span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">PhysActivity=</span>Diabetes<span class="sc">$</span>PhysActivity)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      PhysActivity
-Diabetes_binary        Physical Activity in Past 30 Days
-  No Diabetes                                     169633
-  Prediabetes/Diabetes                             22287
-                      PhysActivity
-Diabetes_binary        No Physical Activity in Past 30 Days
-  No Diabetes                                         48701
-  Prediabetes/Diabetes                                13059</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">PhysActivity=</span>Diabetes<span class="sc">$</span>PhysActivity))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
+    Pearson's Chi-squared test
 
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, PhysActivity = Diabetes$PhysActivity)
-X-squared = 3539.4, df = 1, p-value &lt; 2.2e-16</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Evaluate the Fruits variable</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">Fruits=</span>Diabetes<span class="sc">$</span>Fruits)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>                      Fruits
-Diabetes_binary        Consume Fruit 1 Or More Times Per Day
-  No Diabetes                                         140205
-  Prediabetes/Diabetes                                 20693
-                      Fruits
-Diabetes_binary        Does Not Consume Fruits Regularly
-  No Diabetes                                      78129
-  Prediabetes/Diabetes                             14653</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">chisq.test</span>(<span class="fu">table</span>(<span class="at">Diabetes_binary=</span>Diabetes<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">Fruits=</span>Diabetes<span class="sc">$</span>Fruits))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Pearson's Chi-squared test with Yates' continuity correction
-
-data:  table(Diabetes_binary = Diabetes$Diabetes_binary, Fruits = Diabetes$Fruits)
-X-squared = 421.61, df = 1, p-value &lt; 2.2e-16</code></pre>
+data:  table(Diabetes_binary = Diabetes$Diabetes_binary, Income = Diabetes$Income)
+X-squared = 7003.7, df = 7, p-value &lt; 2.2e-16</code></pre>
 </div>
 </div>
+<p>Using a Chi-square test for independence it appears statistically significant suggesting that the variables of Income and Diabetes_binary are not independent, and thus should be considered for use as a predictor. We performed this test on the contingency table shown above.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
