@@ -7,7 +7,7 @@ editor: visual
 
 ## Introduction
 
-Here is the revised version without iThe data explored in this analysis comes from the CDC's BRFSS 2015 survey. The target variable for analysis is the Diabetes_binary variable, which has two classes: no diabetes and prediabetes/diabetes. There are 21 predictor variables in the dataset that may be included in the subsequent models. The dataset is unbalanced, meaning there are more cases in which the survey respondent had no diabetes than cases in which the respondent had prediabetes or diabetes. This is important for modeling because we want to ensure that our model performs better than the majority class rate, which is the rate of the largest class in the dataset. In this case, the largest class is the no diabetes class. The majority class rate is 86.07 percent, which is important to note if we were using accuracy as our metric. However, in this analysis, we will be using log loss as the evaluation metric, so the majority class rate will not be our primary concern. In addition to using log loss as the metric for determining the best models, the modeling process will include 5 fold cross-validation and will consider logistic regression, classification trees, and random forest models.
+The data explored in this analysis comes from the CDC's BRFSS 2015 survey. The target variable for analysis is the Diabetes_binary variable, which has two classes: no diabetes and prediabetes/diabetes. There are 21 predictor variables in the dataset that may be included in the subsequent models. The dataset is unbalanced, meaning there are more cases in which the survey respondent had no diabetes than cases in which the respondent had prediabetes or diabetes. This is important for modeling because we want to ensure that our model performs better than the majority class rate, which is the rate of the largest class in the dataset. In this case, the largest class is the no diabetes class. The majority class rate is 86.07 percent, which is important to note if we were using accuracy as our metric. However, in this analysis, we will be using log loss as the evaluation metric, so the majority class rate will not be our primary concern. In addition to using log loss as the metric for determining the best models, the modeling process will include 5 fold cross-validation and will consider logistic regression, classification trees, and random forest models.
 
 Utilizing the transformed data from the EDA process, it is important to split the data into a training and test set for utilization in modeling. By performing this split, it helps prevent over fitting as the goal of modeling is to predict well on unseen data. By saving 30% of our data set to utilize in analyzing the models, it will help determine the optimal model from this modeling process.
 
@@ -165,7 +165,8 @@ diabetes_rforest <- train(Diabetes_binary~.,
                           method="rf", 
                           data=train, 
                           tuneGrid=data.frame(mtry=1:(ncol(train)-1)), 
-                          trControl=tr) 
+                          trControl=tr,
+                          metric="logLoss") 
 diabetes_rforest$results
 diabetes_rforest$bestTune
 ```
