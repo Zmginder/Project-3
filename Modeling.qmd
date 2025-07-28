@@ -110,7 +110,7 @@ test <- Diabetes[-index, ]
 ## Logistic Regression Models
 
 ```{r}
-#5-fold CV, repeated, tuning
+#5-fold CV, tuning
 tr <- trainControl(method="cv",
                    number=5,
                    classProbs=TRUE,
@@ -146,29 +146,40 @@ Log_Loss_Results
 ## Classification Tree
 
 ```{r}
-diabetes_rpart <- rpart(Diabetes_binary ~.,
+diabetes_rpart <- rpart(Diabetes_binary~.,
                       data=train,
                       method="class",
                       parms = list(split="information"),
                       control=rpart.control(xval=5,
-                                            minbucket=2,
+                                            minbucket=5,
                                             cp=0))
-diabetes_rpart$cptable
-cp<- diabetes_rpart$cptable
+cp<-diabetes_rpart$cptable[3,1]
+
+#Refit the model with the optimal cp=0.001178096
+tuned_tree <- prune(diabetes_rpart, cp=cp)
+rpart.plot(tuned_tree)
 ```
 
 ## Random Forest
 
 ```{r}
 #Find optimal tuning parameter for the random forest model 
-diabetes_rforest <- train(Diabetes_binary~., 
+diabetes_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol, 
                           method="rf", 
                           data=train, 
-                          tuneGrid=data.frame(mtry=1:(ncol(train)-1)), 
+                          tuneGrid=data.frame(mtry=1:4), 
                           trControl=tr,
                           metric="logLoss") 
 diabetes_rforest$results
 diabetes_rforest$bestTune
+
+#Refit the model with the optimal mtry=2
+tuned_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol,
+                        method="rf",
+                        data=train,
+                        tuneGrid=data.frame(mtry=2),
+                        trControl=trainControl(method="none"))
+varImp(tuned_rforest)
 ```
 
 ## Final Model Selection
