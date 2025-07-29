@@ -109,7 +109,30 @@ test <- Diabetes[-index, ]
 
 ## Logistic Regression Models
 
+The first model that will be considered for modeling this Diabetes data set is the logistic regression model. A logistic regression model is a type of parametric model that requires the response variable to be binary/two classes. This is why logistic regression is useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. This logistic regression model is predicting the probability given the predictors that a person belongs to the class of Prediabetes_or_Diabetes.
+
+In this section, we will evaluate three candidate logistic regression models using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing log loss as the metric, we will determine which of the three models performs the best and select that model as the best logistic model of the three that were analyzed. The three models are as follows:
+
+Logistic Regression Model 1:
+
+$$
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)}}{1+e^{\beta_0+\beta_1(BMI)}}
+$$
+
+Logistic Regression Model 2:
+
+$$
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}{1+e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}
+$$
+
+Logistic Regression Model 3:
+
+*Similar equation to models 1 and 2, however, every predictor variable (21 of them) is included.*
+
 ```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
 #5-fold CV, tuning
 tr <- trainControl(method="cv",
                    number=5,
@@ -141,11 +164,38 @@ Log_Loss_Results<-rbind(
   data.frame(Model="Model 3",logit_3$results)
 )
 Log_Loss_Results
+
+
 ```
+
+The resulting log loss table shows that the optimal model based on log loss is logistic regression model 3 which includes all 21 predictors. This is because we want to minimize the log loss of our model and the third model resulted in the smallest log loss. We will then tune this best model back to the entire training data set for later comparison to the other best models.
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Tune logistic regression model 3 to the entire training data set
+tuned_logit<-train(Diabetes_binary~.,
+                 data=train,
+                 method="glm",
+                 family="binomial",
+                 trControl=trainControl(method="none"))
+as.data.frame(coef(tuned_logit$finalModel))
+```
+
+The resulting output shows the coefficients for the tuned logistic regression model.
 
 ## Classification Tree
 
+The next model that will be considered for modeling this Diabetes data set is the classification tree model. A classification tree model is a type of nonparametric model that attempts to predict the response class given a set of predictor values. This is why classification trees are useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. Classification trees continue creating subsets of the response space based on the predictors until some sort of stopping criteria is met. In this case, I have set the minimum allowed observations to be in a final subseted space to be 5 survey respondents.
+
+In this section, we will determine the optimal complexity parameter (cp) using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing cross validation error (xerror) as the metric, we will determine the optimal cp. The cp parameter helps prevent overfitting be reducing the complexity of the classification tree. The allowed parameters for the classification tree will be all 21 predictors in the data set.
+
 ```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Run the classification tree to determine optimal cp using 5 fold cv
 diabetes_rpart <- rpart(Diabetes_binary~.,
                       data=train,
                       method="class",
@@ -153,33 +203,59 @@ diabetes_rpart <- rpart(Diabetes_binary~.,
                       control=rpart.control(xval=5,
                                             minbucket=5,
                                             cp=0))
-cp<-diabetes_rpart$cptable[3,1]
+#Optimal cp is cp=0.0004113784
+as.data.frame(diabetes_rpart$cptable[1:15,c(1,2,4)])
+cp<-diabetes_rpart$cptable[9,1]
 
-#Refit the model with the optimal cp=0.001178096
+```
+
+The resulting cp table shows that based on the cross validation error, the best performing cp is cp=0.0004113784. We can then prune or trim back the classification tree based on this complexity parameter and we get the resulting "best" classification tree:
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#Refit the model with the optimal cp=0.0004113784
 tuned_tree <- prune(diabetes_rpart, cp=cp)
 rpart.plot(tuned_tree)
+
 ```
 
 ## Random Forest
 
+The final model that will be considered for modeling this Diabetes data set is the random forest model. A random forest model is a type of nonparametric model that attempts to predict the response class given a set of predictor values. This is why classification trees are useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. Classification trees continue creating subsets of the response space based on the predictors until some sort of stopping criteria is met. In this case, I have set the minimum allowed observations to be in a final subseted space to be 5 survey respondents.
+
+In this section, we will determine the optimal complexity parameter (cp) using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing cross validation error (xerror) as the metric, we will determine the optimal cp. The cp parameter helps prevent overfitting be reducing the complexity of the classification tree. The allowed parameters for the classification tree will be all 21 predictors in the data set.
+
 ```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
 #Find optimal tuning parameter for the random forest model 
 diabetes_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol, 
                           method="rf", 
                           data=train, 
-                          tuneGrid=data.frame(mtry=1:4), 
+                          tuneGrid=data.frame(mtry=1:9), 
                           trControl=tr,
                           metric="logLoss") 
 diabetes_rforest$results
 diabetes_rforest$bestTune
 
 #Refit the model with the optimal mtry=2
-tuned_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol,
-                        method="rf",
-                        data=train,
-                        tuneGrid=data.frame(mtry=2),
-                        trControl=trainControl(method="none"))
-varImp(tuned_rforest)
+#tuned_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol,
+                        #method="rf",
+                        #data=train,
+                        #tuneGrid=data.frame(mtry=2),
+                        #trControl=trainControl(method="none"))
+#varImp(tuned_rforest)
 ```
 
 ## Final Model Selection
+
+```{r}
+#Predict with logit
+#pred_logit<-predict(tuned_logit,newdata = test)
+#Predict wtih classification tree
+#pred_tree<-predict(tuned_tree,type="class",newdata = test)
+#Predict with random forest
+#pred_rforest<-predict(tuned_rforest,newdata = test)
+```

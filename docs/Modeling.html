@@ -101,6 +101,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -238,65 +267,171 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="logistic-regression-models" class="level2">
 <h2 class="anchored" data-anchor-id="logistic-regression-models">Logistic Regression Models</h2>
+<p>The first model that will be considered for modeling this Diabetes data set is the logistic regression model. A logistic regression model is a type of parametric model that requires the response variable to be binary/two classes. This is why logistic regression is useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. This logistic regression model is predicting the probability given the predictors that a person belongs to the class of Prediabetes_or_Diabetes.</p>
+<p>In this section, we will evaluate three candidate logistic regression models using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing log loss as the metric, we will determine which of the three models performs the best and select that model as the best logistic model of the three that were analyzed. The three models are as follows:</p>
+<p>Logistic Regression Model 1:</p>
+<p><span class="math display">\[
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)}}{1+e^{\beta_0+\beta_1(BMI)}}
+\]</span></p>
+<p>Logistic Regression Model 2:</p>
+<p><span class="math display">\[
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}{1+e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}
+\]</span></p>
+<p>Logistic Regression Model 3:</p>
+<p><em>Similar equation to models 1 and 2, however, every predictor variable (21 of them) is included.</em></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#5-fold CV, tuning</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>tr <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method=</span><span class="st">"cv"</span>,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">number=</span><span class="dv">5</span>,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">classProbs=</span><span class="cn">TRUE</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">summaryFunction=</span>mnLogLoss)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#CV to obtain log loss for each model</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>logit_1 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>BMI,</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>logit_2<span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>BMI<span class="sc">+</span>HvyAlcoholConsump<span class="sc">+</span>Income,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>logit_3<span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>.,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>Log_Loss_Results<span class="ot">&lt;-</span><span class="fu">rbind</span>(</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 1"</span>,logit_1<span class="sc">$</span>results),</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 2"</span>,logit_2<span class="sc">$</span>results),</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 3"</span>,logit_3<span class="sc">$</span>results)</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>Log_Loss_Results</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set a seed for reproducible results</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">8675309</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#5-fold CV, tuning</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>tr <span class="ot">&lt;-</span> <span class="fu">trainControl</span>(<span class="at">method=</span><span class="st">"cv"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">number=</span><span class="dv">5</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">classProbs=</span><span class="cn">TRUE</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">summaryFunction=</span>mnLogLoss)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#CV to obtain log loss for each model</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>logit_1 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>BMI,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>logit_2<span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>BMI<span class="sc">+</span>HvyAlcoholConsump<span class="sc">+</span>Income,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>logit_3<span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>.,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span>tr,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                 <span class="at">metric=</span><span class="st">"logLoss"</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>Log_Loss_Results<span class="ot">&lt;-</span><span class="fu">rbind</span>(</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 1"</span>,logit_1<span class="sc">$</span>results),</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 2"</span>,logit_2<span class="sc">$</span>results),</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model=</span><span class="st">"Model 3"</span>,logit_3<span class="sc">$</span>results)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>Log_Loss_Results</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    Model parameter   logLoss    logLossSD
-1 Model 1      none 0.3828733 0.0006690048
-2 Model 2      none 0.3714013 0.0010490971
-3 Model 3      none 0.3164702 0.0007043334</code></pre>
+<pre><code>    Model parameter   logLoss   logLossSD
+1 Model 1      none 0.3828882 0.001653977
+2 Model 2      none 0.3713817 0.001226020
+3 Model 3      none 0.3165335 0.001741622</code></pre>
 </div>
 </div>
+<p>The resulting log loss table shows that the optimal model based on log loss is logistic regression model 3 which includes all 21 predictors. This is because we want to minimize the log loss of our model and the third model resulted in the smallest log loss. We will then tune this best model back to the entire training data set for later comparison to the other best models.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set a seed for reproducible results</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">8675309</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Tune logistic regression model 3 to the entire training data set</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>tuned_logit<span class="ot">&lt;-</span><span class="fu">train</span>(Diabetes_binary<span class="sc">~</span>.,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">data=</span>train,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">method=</span><span class="st">"glm"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">family=</span><span class="st">"binomial"</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">trControl=</span><span class="fu">trainControl</span>(<span class="at">method=</span><span class="st">"none"</span>))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.frame</span>(<span class="fu">coef</span>(tuned_logit<span class="sc">$</span>finalModel))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                 coef(tuned_logit$finalModel)
+(Intercept)                                                      -8.310364834
+HighBPHigh_BP                                                     0.708792843
+HighCholHigh_Cholesterol                                          0.528739613
+CholCheckYes_Cholesterol_Check_In_5_Years                         1.263576637
+BMI                                                               0.057363037
+SmokerNot_A_Smoker                                                0.041768266
+StrokeNo_Stroke                                                  -0.191969888
+HeartDiseaseorAttackNo_Heart_Disease_Evident                     -0.260804978
+PhysActivityNo_Physical_Activity_in_Past_30_Days                  0.073808243
+FruitsDoes_Not_Consume_Fruits_Regularly                           0.019889097
+VeggiesDoes_Not_Consume_Vegetables_Regularly                      0.023809427
+HvyAlcoholConsumpNot_Heavy_Alcohol_Consumer                       0.732367997
+AnyHealthcareNo_Health_Insurance                                 -0.037673208
+NoDocbcCostNo_Cost_Barrier_to_Healthcare                          0.007505848
+GenHlthVery_Good                                                  0.705869183
+GenHlthGood                                                       1.413114584
+GenHlthFair                                                       1.822146352
+GenHlthPoor                                                       1.982315181
+MentHlth                                                         -0.003252658
+PhysHlth                                                         -0.003036485
+DiffWalkNo_Difficulty_With_Walking_or_Stairs                     -0.154485758
+SexMale                                                           0.275522258
+`Age25-29`                                                        0.102784178
+`Age30-34`                                                        0.433738324
+`Age35-39`                                                        0.814929056
+`Age40-44`                                                        1.113791545
+`Age45-49`                                                        1.314814343
+`Age50-54`                                                        1.536164688
+`Age55-59`                                                        1.657354008
+`Age60-64`                                                        1.831967512
+`Age65-69`                                                        2.004120619
+`Age70-74`                                                        2.051575174
+`Age75-79`                                                        1.967540839
+Age80_or_older                                                    1.776190226
+`EducationGrades_1-8`                                             0.067406644
+`EducationGrades_ 9-11`                                          -0.054978578
+EducationGrades_12_or_GED                                        -0.112493612
+EducationSome_College_or_Technical_School                        -0.070240153
+EducationGraduated_College_or_Technical_School                   -0.170233788
+`Income$10,000_to_less_than_$15,000`                             -0.078008895
+`Income$15,000_to_less_than_$20,000`                             -0.075586844
+`Income$20,000_to_less_than_$25,000`                             -0.077899099
+`Income$25,000_to_less_than_$35,000`                             -0.165288967
+`Income$35,000_to_less_than_$50,000`                             -0.262982072
+`Income$50,000_to_less_than_$75,000`                             -0.287932813
+`Income$75,000_or_more`                                          -0.410806847</code></pre>
+</div>
+</div>
+<p>The resulting output shows the coefficients for the tuned logistic regression model.</p>
 </section>
 <section id="classification-tree" class="level2">
 <h2 class="anchored" data-anchor-id="classification-tree">Classification Tree</h2>
+<p>The next model that will be considered for modeling this Diabetes data set is the classification tree model. A classification tree model is a type of nonparametric model that attempts to predict the response class given a set of predictor values. This is why classification trees are useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. Classification trees continue creating subsets of the response space based on the predictors until some sort of stopping criteria is met. In this case, I have set the minimum allowed observations to be in a final subseted space to be 5 survey respondents.</p>
+<p>In this section, we will determine the optimal complexity parameter (cp) using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing cross validation error (xerror) as the metric, we will determine the optimal cp.&nbsp;The cp parameter helps prevent overfitting be reducing the complexity of the classification tree. The allowed parameters for the classification tree will be all 21 predictors in the data set.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>diabetes_rpart <span class="ot">&lt;-</span> <span class="fu">rpart</span>(Diabetes_binary <span class="sc">~</span>.,</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data=</span>train,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method=</span><span class="st">"class"</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                      <span class="at">parms =</span> <span class="fu">list</span>(<span class="at">split=</span><span class="st">"information"</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                      <span class="at">control=</span><span class="fu">rpart.control</span>(<span class="at">xval=</span><span class="dv">5</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">minbucket=</span><span class="dv">2</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">cp=</span><span class="dv">0</span>))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>cp<span class="ot">&lt;-</span> diabetes_rpart<span class="sc">$</span>cptable[<span class="dv">8</span>,<span class="dv">1</span>]</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#Refit the model with the optimal cp=0.00044686382</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>tuned_tree <span class="ot">&lt;-</span> <span class="fu">prune</span>(diabetes_rpart, <span class="at">cp=</span>cp)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">rpart.plot</span>(tuned_tree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set a seed for reproducible results</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">8675309</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Run the classification tree to determine optimal cp using 5 fold cv</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>diabetes_rpart <span class="ot">&lt;-</span> <span class="fu">rpart</span>(Diabetes_binary<span class="sc">~</span>.,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>                      <span class="at">data=</span>train,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>                      <span class="at">method=</span><span class="st">"class"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                      <span class="at">parms =</span> <span class="fu">list</span>(<span class="at">split=</span><span class="st">"information"</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                      <span class="at">control=</span><span class="fu">rpart.control</span>(<span class="at">xval=</span><span class="dv">5</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">minbucket=</span><span class="dv">5</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">cp=</span><span class="dv">0</span>))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Optimal cp is cp=0.0004113784</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="fu">as.data.frame</span>(diabetes_rpart<span class="sc">$</span>cptable[<span class="dv">1</span><span class="sc">:</span><span class="dv">15</span>,<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">4</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             CP nsplit    xerror
+1  0.0051511212      0 1.0000000
+2  0.0028639909      5 0.9818817
+3  0.0011780955      7 0.9705476
+4  0.0010968476      8 0.9715632
+5  0.0006093598      9 0.9719695
+6  0.0005687358     11 0.9692476
+7  0.0005145705     13 0.9692476
+8  0.0005077998     16 0.9696133
+9  0.0004113178     18 0.9690445
+10 0.0004062398     26 0.9690851
+11 0.0003960838     29 0.9691258
+12 0.0003453039     37 0.9691258
+13 0.0003249919     43 0.9690851
+14 0.0003046799     46 0.9691258
+15 0.0002945239     49 0.9694508</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cp<span class="ot">&lt;-</span>diabetes_rpart<span class="sc">$</span>cptable[<span class="dv">9</span>,<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The resulting cp table shows that based on the cross validation error, the best performing cp is cp=0.0004113784. We can then prune or trim back the classification tree based on this complexity parameter and we get the resulting “best” classification tree:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Refit the model with the optimal cp=0.0004113784</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>tuned_tree <span class="ot">&lt;-</span> <span class="fu">prune</span>(diabetes_rpart, <span class="at">cp=</span>cp)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">rpart.plot</span>(tuned_tree)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Modeling_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Modeling_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="768"></p>
 </figure>
 </div>
 </div>
@@ -305,20 +440,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="random-forest" class="level2">
 <h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Find optimal tuning parameter for the random forest model </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest &lt;- train(Diabetes_binary~., </span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#method="rf", </span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#data=train, </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#tuneGrid=data.frame(mtry=1:(nrow(train)-1)), </span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#trControl=tr,</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#metric="logLoss",</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#ntree=5) </span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest$results</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest$bestTune</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Find optimal tuning parameter for the random forest model </span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest &lt;- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol, </span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#method="rf", </span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#data=train, </span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#tuneGrid=data.frame(mtry=1:4), </span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#trControl=tr,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                          <span class="co">#metric="logLoss") </span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest$results</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">#diabetes_rforest$bestTune</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co">#Refit the model with the optimal mtry=2</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="co">#tuned_rforest &lt;- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol,</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>                        <span class="co">#method="rf",</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>                        <span class="co">#data=train,</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>                        <span class="co">#tuneGrid=data.frame(mtry=2),</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                        <span class="co">#trControl=trainControl(method="none"))</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="co">#varImp(tuned_rforest)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="final-model-selection" class="level2">
 <h2 class="anchored" data-anchor-id="final-model-selection">Final Model Selection</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Predict with logit</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#pred_logit&lt;-predict(tuned_logit,newdata = test)</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Predict wtih classification tree</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">#pred_tree&lt;-predict(tuned_tree,type="class",newdata = test)</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Predict with random forest</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#pred_rforest&lt;-predict(tuned_rforest,newdata = test)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
 </section>
