@@ -301,4 +301,4 @@ chisq.test(table(Diabetes_binary=Diabetes$Diabetes_binary,
 
 Using a Chi-square test for independence it appears statistically significant suggesting that the variables of Income and Diabetes_binary are not independent, and thus should be considered for use as a predictor. We performed this test on the contingency table shown above.
 
-Link to Modeling Page: <https://zmginder.github.io/Project-3/Modeling.html>
+Link to Modeling Page: https://zmginder.github.io/Project-3/Modeling.html
