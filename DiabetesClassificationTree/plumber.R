@@ -86,17 +86,67 @@ finalfull_classificationtree <- rpart(Diabetes_binary~.,
                                                         cp=0))
 
 #Prune tree with optimal cp=0.0004113784
+cp<-0.0004113784
 finaltuned_classificationtree <- prune(finalfull_classificationtree, cp=cp)
 
+#* @apiTitle Diabetes Classification Tree API
+#* @apiDescription This API utilizes a classification tree model to determine whether a respondent is likely to have prediabetes/diabetes or not. Because it is a classification tree, all the parameters must be specified even though not all parameters were chosen as decision rules in the classification tree model.
 
-#* @apiTitle Plumber Example API
-#* @apiDescription Plumber example description.
-
-#* Echo back the input
-#* @param msg The message to echo
-#* @get /echo
-function(msg = "") {
-    list(msg = paste0("The message is: '", msg, "'"))
+#* Make a prediction
+#* @param HighBP Class for whether the respondent has high blood pressure
+#* @param GenHlth Class for respondents general health
+#* @param BMI The respondents numeric BMI
+#* @param HighChol Class for whether the respondent has high cholersterol
+#* @param Age Class of the respondents age
+#* @param CholCheck Class for whether the respondent has had a cholesterol check in the last 5 years
+#* @param HvyAlcoholConsump Class for whether the respondent is a heavy alcohol consumer
+#* @param Income Class for what income bracket the respondent falls into
+#* @get /pred
+function(HighBP="No_High_BP",
+         HighChol="No_High_Cholesterol",
+         CholCheck="Yes_Cholesterol_Check_In_5_Years",
+         BMI=28.38,
+         Smoker="Not_A_Smoker",
+         Stroke="No_Stroke",
+         HeartDiseaseorAttack="No_Heart_Disease_Evident",
+         PhysActivity="Physical_Activity_in_Past_30_Days",
+         Fruits="Consume_Fruit_1_Or_More_Times_Per_Day",
+         Veggies="Consume_Vegetables_1_Or_More_Times_Per_Day",
+         HvyAlcoholConsump="Not_Heavy_Alcohol_Consumer",
+         AnyHealthcare="Has_Health_Insurance",
+         NoDocbcCost="No_Cost_Barrier_to_Healthcare",
+         GenHlth="Very_Good",
+         MentHlth=1,
+         PhysHlth=1,
+         DiffWalk="No_Difficulty_With_Walking_or_Stairs",
+         Sex="Female",
+         Age="60-64",
+         Education="Graduated_College_or_Technical_School",
+         Income="$75,000_or_more") {
+    pred_data<-data.frame(HighBP=HighBP,
+                          HighChol=HighChol,
+                          CholCheck=CholCheck,
+                          BMI=as.numeric(BMI),
+                          Smoker=Smoker,
+                          Stroke=Stroke,
+                          HeartDiseaseorAttack=HeartDiseaseorAttack,
+                          PhysActivity=PhysActivity,
+                          Fruits=Fruits,
+                          Veggies=Veggies,
+                          HvyAlcoholConsump=HvyAlcoholConsump,
+                          AnyHealthcare=AnyHealthcare,
+                          NoDocbcCost=NoDocbcCost,
+                          GenHlth=GenHlth,
+                          MentHlth=as.numeric(MentHlth),
+                          PhysHlth=as.numeric(PhysHlth),
+                          DiffWalk=DiffWalk,
+                          Sex=Sex,
+                          Age=Age,
+                          Education=Education,
+                          Income=Income)
+    
+    prediction<-predict(finaltuned_classificationtree,newdata=pred_data,type="class")
+    return(prediction)
 }
 
 #* Plot a histogram
