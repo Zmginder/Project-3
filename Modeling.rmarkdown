@@ -1,0 +1,363 @@
+---
+title: "Modeling"
+author: "Zach Ginder"
+format: html
+editor: visual
+---
+
+
+
+## Introduction
+
+The data explored in this analysis comes from the CDC's BRFSS 2015 survey. The target variable for analysis is the Diabetes_binary variable, which has two classes: no diabetes and prediabetes/diabetes. There are 21 predictor variables in the dataset that may be included in the subsequent models. The dataset is unbalanced, meaning there are more cases in which the survey respondent had no diabetes than cases in which the respondent had prediabetes or diabetes. This is important for modeling because we want to ensure that our model performs better than the majority class rate, which is the rate of the largest class in the dataset. In this case, the largest class is the no diabetes class. The majority class rate is 86.07 percent, which is important to note if we were using accuracy as our metric. However, in this analysis, we will be using log loss as the evaluation metric, so the majority class rate will not be our primary concern. In addition to using log loss as the metric for determining the best models, the modeling process will include 5 fold cross-validation and will consider logistic regression, classification trees, and random forest models.
+
+Utilizing the transformed data from the EDA process, it is important to split the data into a training and test set for utilization in modeling. By performing this split, it helps prevent over fitting as the goal of modeling is to predict well on unseen data. By saving 30% of our data set to utilize in analyzing the models, it will help determine the optimal model from this modeling process.
+
+
+
+```{r}
+#| warning: false
+#| message: false
+#Library these packages
+library(Metrics)
+library(tidyverse)
+library(caret)
+library(rpart)
+library(rpart.plot)
+
+#Read in csv file
+Diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+
+#Transform data from numeric to factor
+Diabetes<-Diabetes|>
+  mutate(Diabetes_binary=factor(Diabetes_binary,levels=c("0","1"),
+                                labels=c("No_Diabetes","Prediabetes_or_Diabetes")),
+         HighBP=factor(HighBP,levels=c("0","1"),
+                          labels=c("No_High_BP","High_BP")),
+         HighChol=factor(HighChol,levels=c("0","1"),
+                            labels=c("No_High_Cholesterol","High_Cholesterol")),
+         CholCheck=factor(CholCheck,levels=c("0","1"),
+                             labels=c("No_Cholesterol_Check_In_5_Years",
+                                      "Yes_Cholesterol_Check_In_5_Years")),
+         Smoker=factor(Smoker,levels=c("1","0"),
+                             labels=c("Smoker",
+                                      "Not_A_Smoker")),
+         Stroke=factor(Stroke,levels=c("1","0"),
+                             labels=c("Diagnosed_With_Stroke","No_Stroke")),
+         HeartDiseaseorAttack=factor(HeartDiseaseorAttack,levels=c("1","0"),
+                             labels=c("Coronary_Heart_Disease_or_Myocardial_Infarction",
+                                      "No_Heart_Disease_Evident")),
+         PhysActivity=factor(PhysActivity,levels=c("1","0"),
+                             labels=c("Physical_Activity_in_Past_30_Days",
+                                      "No_Physical_Activity_in_Past_30_Days")),
+         Fruits=factor(Fruits,levels=c("1","0"),
+                             labels=c("Consume_Fruit_1_Or_More_Times_Per_Day",
+                                      "Does_Not_Consume_Fruits_Regularly")),
+         Veggies=factor(Veggies,levels=c("1","0"),
+                             labels=c("Consume_Vegetables_1_Or_More_Times_Per_Day",
+                                      "Does_Not_Consume_Vegetables_Regularly")),
+         HvyAlcoholConsump=factor(HvyAlcoholConsump,levels=c("1","0"),
+                             labels=c("Heavy_Alcohol_Consumer",
+                                      "Not_Heavy_Alcohol_Consumer")),
+         AnyHealthcare=factor(AnyHealthcare,levels=c("1","0"),
+                             labels=c("Has_Health_Insurance",
+                                      "No_Health_Insurance")),
+         NoDocbcCost=factor(NoDocbcCost,levels=c("1","0"),
+                             labels=c("Missed_Doctors_Visit_Due_to_Cost",
+                                      "No_Cost_Barrier_to_Healthcare")),
+         GenHlth=factor(GenHlth,levels=c("1","2","3","4","5"),
+                             labels=c("Excellent","Very_Good","Good","Fair","Poor")),
+         DiffWalk=factor(DiffWalk,levels=c("1","0"),
+                             labels=c("Difficulty_With_Walking_or_Stairs",
+                                      "No_Difficulty_With_Walking_or_Stairs")),
+         Sex=factor(Sex,levels=c("0","1"),
+                             labels=c("Female","Male")),
+         Age=factor(Age,levels=c("1","2","3","4","5","6","7","8","9","10",
+                                         "11","12","13"),
+                             labels=c("18-24","25-29","30-34","35-39","40-44",
+                                      "45-49","50-54","55-59","60-64","65-69",
+                                      "70-74","75-79","80_or_older")),
+         Education=factor(Education,levels=c("1","2","3","4","5","6"),
+                             labels=c("Never_Attended_School_Or_Only_Kindergarten",
+                                      "Grades_1-8",
+                                      "Grades_ 9-11",
+                                      "Grades_12_or_GED",
+                                      "Some_College_or_Technical_School",
+                                      "Graduated_College_or_Technical_School")),
+         Income=factor(Income,levels=c("1","2","3","4","5","6","7","8"),
+                             labels=c("Less_than_$10,000",
+                                      "$10,000_to_less_than_$15,000",
+                                      "$15,000_to_less_than_$20,000",
+                                      "$20,000_to_less_than_$25,000",
+                                      "$25,000_to_less_than_$35,000",
+                                      "$35,000_to_less_than_$50,000",
+                                      "$50,000_to_less_than_$75,000",
+                                      "$75,000_or_more")),
+         )
+
+```
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Sample from the row indices to include in the test set
+n <- nrow(Diabetes)
+index <- sample(x = 1:n,
+                size= round(0.7*n),
+                replace=FALSE)
+
+#Test and training sets
+train <- Diabetes[index, ]
+test <- Diabetes[-index, ]
+```
+
+
+
+## Logistic Regression Models
+
+The first model that will be considered for modeling this Diabetes data set is the logistic regression model. A logistic regression model is a type of parametric model that requires the response variable to be binary/two classes. This is why logistic regression is useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. This logistic regression model is predicting the probability given the predictors that a person belongs to the class of Prediabetes_or_Diabetes.
+
+In this section, we will evaluate three candidate logistic regression models using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing log loss as the metric, we will determine which of the three models performs the best and select that model as the best logistic model of the three that were analyzed. The three models are as follows:
+
+Logistic Regression Model 1:
+
+$$
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)}}{1+e^{\beta_0+\beta_1(BMI)}}
+$$
+
+Logistic Regression Model 2:
+
+$$
+P(Y=Prediabetes or Diabetes)=\frac{e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}{1+e^{\beta_0+\beta_1(BMI)+\beta_2(HvyAlcoholConsump)+\beta_3(Income)}}
+$$
+
+Logistic Regression Model 3:
+
+*Similar equation to models 1 and 2, however, every predictor variable (21 of them) is included.*
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#5-fold CV, tuning
+tr <- trainControl(method="cv",
+                   number=5,
+                   classProbs=TRUE,
+                   summaryFunction=mnLogLoss)
+
+#CV to obtain log loss for each model
+logit_1 <- train(Diabetes_binary~BMI,
+                 data=train,
+                 method="glm",
+                 family="binomial",
+                 trControl=tr,
+                 metric="logLoss")
+logit_2<- train(Diabetes_binary~BMI+HvyAlcoholConsump+Income,
+                 data=train,
+                 method="glm",
+                 family="binomial",
+                 trControl=tr,
+                 metric="logLoss")
+logit_3<- train(Diabetes_binary~.,
+                 data=train,
+                 method="glm",
+                 family="binomial",
+                 trControl=tr,
+                 metric="logLoss")
+Log_Loss_Results<-rbind(
+  data.frame(Model="Model 1",logit_1$results),
+  data.frame(Model="Model 2",logit_2$results),
+  data.frame(Model="Model 3",logit_3$results)
+)
+Log_Loss_Results
+
+
+```
+
+
+
+The resulting log loss table shows that the optimal model based on log loss is logistic regression model 3 which includes all 21 predictors. This is because we want to minimize the log loss of our model and the third model resulted in the smallest log loss. We will then tune this best model back to the entire training data set for later comparison to the other best models.
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Tune logistic regression model 3 to the entire training data set
+tuned_logit<-train(Diabetes_binary~.,
+                 data=train,
+                 method="glm",
+                 family="binomial",
+                 trControl=trainControl(method="none"))
+as.data.frame(coef(tuned_logit$finalModel))
+```
+
+
+
+The resulting output shows the coefficients for the tuned logistic regression model.
+
+## Classification Tree
+
+The next model that will be considered for modeling this Diabetes data set is the classification tree model. A classification tree model is a type of nonparametric model that attempts to predict the response class given a set of predictor values. This is why classification trees are useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. Classification trees continue creating subsets of the response space based on the predictors until some sort of stopping criteria is met and the majority class within each subset is used as the predicted class for that subset space. In this case, I have set the minimum allowed observations to be in a final subset space to be 5 survey respondents.
+
+In this section, we will determine the optimal complexity parameter (cp) using 5 fold cross validation on the training subset of the Diabetes data set. Utilizing cross validation error (xerror) as the metric, we will determine the optimal cp. The cp parameter helps prevent over fitting be reducing the complexity of the classification tree. The allowed parameters for the classification tree will be all 21 predictors in the data set.
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Run the classification tree to determine optimal cp using 5 fold cv
+diabetes_rpart <- rpart(Diabetes_binary~.,
+                      data=train,
+                      method="class",
+                      parms = list(split="information"),
+                      control=rpart.control(xval=5,
+                                            minbucket=5,
+                                            cp=0))
+#Optimal cp is cp=0.0004113784
+as.data.frame(diabetes_rpart$cptable[1:15,c(1,2,4)])
+cp<-diabetes_rpart$cptable[9,1]
+
+```
+
+
+
+The resulting cp table shows that based on the cross validation error, the best performing cp is cp=0.0004113784. We can then prune or trim back the classification tree based on this complexity parameter and we get the resulting "best" classification tree:
+
+
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Refit the model with the optimal cp=0.0004113784
+tuned_tree <- prune(diabetes_rpart, cp=cp)
+rpart.plot(tuned_tree)
+
+```
+
+
+
+## Random Forest
+
+The final model that will be considered for modeling this Diabetes data set is the random forest model. A random forest model is a type of nonparametric model that attempts to predict the response class given a set of predictor values. This is why random forest models are useful for this data as our response variable of Diabetes_binary is two classes: No_Diabetes and Prediabetes_or_Diabetes. Random forest models are an ensemble of many classification trees. The benefit of this method is it helps prevent overfitting which can occur with one singular decision tree.
+
+In this section, we will determine the optimal mtry parameter using 5 fold cross validation on the training subset of the Diabetes data set. This parameter is the random number of predictors at each split of a decision tree that can be utilized. In a standard classification tree, all predictors are available to be used at each split, but in random forest models you can require only a subset of those predictors to be available. Utilizing log loss as the metric, we will determine the optimal mtry. The mtry parameter helps prevent overfitting because certain parameters may have high importance which will then result in all the classification trees having a built in correlation. The allowed parameters for the classification tree will be HighBP, GenHlth, BMI, and HighChol as these were the first four parameters used in the standard classification tree showing their likely importance in a decision tree model. This decision was also made due to processing power.
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Find optimal tuning parameter for the random forest model 
+diabetes_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol, 
+                          method="rf", 
+                          data=train, 
+                          tuneGrid=data.frame(mtry=1:4), 
+                          trControl=tr,
+                          metric="logLoss",
+                          ntree=100
+                          ) 
+diabetes_rforest$results
+
+```
+
+
+
+As shown, the optimal mtry parameter based on log loss is 3. This means the optimal random forest model is the one that only allows 3 predictors to be available per decision split. We can tune the model using the optimal mtry of 3 and show the variable importance.
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Refit the model with the optimal mtry=3
+tuned_rforest <- train(Diabetes_binary~HighBP+GenHlth+BMI+HighChol,
+                        method="rf",
+                        data=train,
+                        tuneGrid=data.frame(mtry=3),
+                        trControl=trainControl(method="none"))
+varImp(tuned_rforest)
+```
+
+
+
+## Final Model Selection
+
+Now that we have three optimal models for each model type, we can compare their performance on the test set utilizing log loss and accuracy.
+
+
+
+```{r}
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Predict with logit
+pred_logit<-predict(tuned_logit,newdata=test,type="prob")[,2]
+#Predict wtih classification tree
+pred_tree<-predict(tuned_tree,newdata=test,type="prob")[,2]
+#Predict with random forest
+pred_rforest<-predict(tuned_rforest,newdata=test,type="prob")[,2]
+
+#Log Loss Calculation for logit
+actual=ifelse(test$Diabetes_binary=="No_Diabetes",0,1)
+ll_logit<-logLoss(actual=actual,predicted = pred_logit)
+a_logit<-accuracy(actual=test$Diabetes_binary,predicted = predict(tuned_logit,newdata=test))
+
+#Log Loss Calculation for classification tree
+ll_class<-logLoss(actual=actual,predicted = pred_tree)
+a_class<-accuracy(actual=test$Diabetes_binary,predicted = predict(tuned_tree,newdata=test,type="class"))
+
+#Log Loss Calculation for random forest
+ll_rforest<-logLoss(actual=actual,predicted = pred_rforest)
+a_rforest<-accuracy(actual=test$Diabetes_binary,predicted = predict(tuned_rforest,newdata=test))
+
+#Log Loss 
+rbind(
+  data.frame(Model="Logistic Regression",LogLoss=ll_logit),
+  data.frame(Model="Classification Tree",LogLoss=ll_class),
+  data.frame(Model="Random Forest",LogLoss=ll_rforest)
+)
+#Accuracy
+rbind(
+  data.frame(Model="Logistic Regression",Accuracy=a_logit),
+  data.frame(Model="Classification Tree",Accuracy=a_class),
+  data.frame(Model="Random Forest",Accuracy=a_rforest)
+)
+```
+
+
+
+We see that the log loss for the random forest model is infinity. This can occur because some of the predicted probabilities are exactly zero or exactly 1 when the actual true value is the opposite class. To ensure we can determine the optimal model, we will utilize accuracy since we can determine the accuracy of all three models. The resulting accuracy table showed that the Classification Tree resulted in the best/highest accuracy of 0.8641859. Therefore our classification tree found earlier is the best model in this analysis. The best practice is to then refit the best model to the entire data set.
+
+
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#Set a seed for reproducible results
+set.seed(8675309)
+
+#Refit classification tree to entire data set
+final_classificationtree <- rpart(Diabetes_binary~.,
+                      data=Diabetes,
+                      method="class",
+                      parms = list(split="information"),
+                      control=rpart.control(minbucket=5,
+                                            cp=0))
+
+#Prune tree with optimal cp=0.0004113784
+tunedfinal_tree <- prune(final_classificationtree, cp=cp)
+rpart.plot(tunedfinal_tree)
+```
+
