@@ -3,6 +3,7 @@
 library(plumber)
 library(tidyverse)
 library(rpart)
+library(httr)
 
 #Read in csv file
 Diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
@@ -161,11 +162,17 @@ function(HighBP="No_High_BP",
     prediction<-predict(finaltuned_classificationtree,newdata=pred_data,type="class")
     return(prediction)
 }
+#THREE EXAMPLE CALLS TO API
+#http://127.0.0.1:24452/pred?HighBP=High_BP&HighChol=High_Cholesterol&CholCheck=No_Cholesterol_Check_In_5_Years&BMI=40&Smoker=Smoker&Stroke=Diagnosed_With_Stroke&HeartDiseaseorAttack=Coronary_Heart_Disease_or_Myocardial_Infarction&PhysActivity=No_Physical_Activity_in_Past_30_Days&Fruits=Consume_Fruit_1_Or_More_Times_Per_Day&Veggies=Consume_Vegetables_1_Or_More_Times_Per_Day&HvyAlcoholConsump=Heavy_Alcohol_Consumer&AnyHealthcare=No_Health_Insurance&NoDocbcCost=Missed_Doctors_Visit_Due_to_Cost&GenHlth=Poor&MentHlth=10&PhysHlth=4&DiffWalk=No_Difficulty_With_Walking_or_Stairs&Sex=Female&Age=60-64&Education=Grades_12_or_GED&Income=%2450%2C000_to_less_than_%2475%2C000
+
+#http://127.0.0.1:24452/pred?HighBP=High_BP&HighChol=No_High_Cholesterol&CholCheck=Yes_Cholesterol_Check_In_5_Years&BMI=10&Smoker=Smoker&Stroke=Diagnosed_With_Stroke&HeartDiseaseorAttack=No_Heart_Disease_Evident&PhysActivity=Physical_Activity_in_Past_30_Days&Fruits=Consume_Fruit_1_Or_More_Times_Per_Day&Veggies=Consume_Vegetables_1_Or_More_Times_Per_Day&HvyAlcoholConsump=Not_Heavy_Alcohol_Consumer&AnyHealthcare=Has_Health_Insurance&NoDocbcCost=No_Cost_Barrier_to_Healthcare&GenHlth=Poor&MentHlth=10&PhysHlth=20&DiffWalk=No_Difficulty_With_Walking_or_Stairs&Sex=Male&Age=80_or_older&Education=Graduated_College_or_Technical_School&Income=Less_than_%2410%2C000
+
+#http://127.0.0.1:24452/pred?HighBP=No_High_BP&HighChol=No_High_Cholesterol&CholCheck=Yes_Cholesterol_Check_In_5_Years&BMI=20&Smoker=Smoker&Stroke=No_Stroke&HeartDiseaseorAttack=Coronary_Heart_Disease_or_Myocardial_Infarction&PhysActivity=Physical_Activity_in_Past_30_Days&Fruits=Does_Not_Consume_Fruits_Regularly&Veggies=Does_Not_Consume_Vegetables_Regularly&HvyAlcoholConsump=Not_Heavy_Alcohol_Consumer&AnyHealthcare=No_Health_Insurance&NoDocbcCost=No_Cost_Barrier_to_Healthcare&GenHlth=Good&MentHlth=30&PhysHlth=30&DiffWalk=No_Difficulty_With_Walking_or_Stairs&Sex=Male&Age=25-29&Education=Never_Attended_School_Or_Only_Kindergarten&Income=%2410%2C000_to_less_than_%2415%2C000
+
 #* Provide Github Pages URL
 #* @get /info
 function(){
-  "Zach Ginder"
-  "https://zmginder.github.io/Project-3/EDA.html"
+  "Zach Ginder     https://zmginder.github.io/Project-3/EDA.html"
 }
 
 # Programmatically alter your API
